@@ -1,6 +1,9 @@
 package com.sandunika.userservice;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,11 +21,13 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Cacheable(value = "userCache", key = "#id")
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
 
+    @CachePut(value = "userCache", key = "#user.id")
     public User updateUser(Long id, User user) {
         User oldUser = userRepository.findById(id).orElse(null);
         if(oldUser!=null)
@@ -33,6 +38,7 @@ public class UserService {
         return oldUser;
     }
 
+    @CacheEvict(value = "userCache", key = "#id")
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
